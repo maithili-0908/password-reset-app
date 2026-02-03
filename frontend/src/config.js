@@ -1,1 +1,1 @@
-export const API_URL = "http://localhost:5000/api/auth";
+export const API_URL = "https://password-reset-app-2dia.onrender.com";
