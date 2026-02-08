@@ -8,29 +8,28 @@ function Login() {
 
   const submit = e => {
     e.preventDefault();
-    // later you can add API call here
     alert("Login clicked");
   };
 
   return (
     <div className="container mt-5">
       <div className="card p-4">
-        <h4 className="mb-3">Login</h4>
+        <h4>Login</h4>
 
         <input
-          className="form-control mb-3"
+          className="form-control my-2"
           placeholder="Email"
           onChange={e => setEmail(e.target.value)}
         />
 
         <input
           type="password"
-          className="form-control mb-3"
+          className="form-control my-2"
           placeholder="Password"
           onChange={e => setPassword(e.target.value)}
         />
 
-        <button className="btn btn-primary w-100" onClick={submit}>
+        <button className="btn btn-primary w-100 mt-2" onClick={submit}>
           Login
         </button>
 
