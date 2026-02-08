@@ -1,7 +1,7 @@
 import { Switch, Route } from "react-router-dom";
-import Login from "../pages/Login";
 import ForgotPassword from "../components/ForgotPassword";
 import ResetPassword from "../components/ResetPassword";
+import Login from "../pages/Login";
 
 export default function AppRoutes() {
   return (
