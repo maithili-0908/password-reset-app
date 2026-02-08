@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from "react";
-import {
-  resetPassword,
-  validateToken
-} from "../services/authService";
+import { useParams } from "react-router-dom";
+import { resetPassword, validateToken } from "../services/authService";
 
-function ResetPassword({ match }) {
+function ResetPassword() {
+  const { token } = useParams();
   const [password, setPassword] = useState("");
-  const token = match.params.token;
 
   useEffect(() => {
     validateToken(token).catch(() =>
-      alert("Link expired")
+      alert("Reset link expired")
     );
   }, [token]);
 
   const submit = async () => {
-    await resetPassword(token, password);
-    alert("Password reset successful");
+    try {
+      await resetPassword(token, password);
+      alert("Password reset successful");
+    } catch {
+      alert("Failed to reset password");
+    }
   };
 
   return (
