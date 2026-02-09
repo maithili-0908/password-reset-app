@@ -1,33 +1,44 @@
 import React, { useState } from "react";
 import { forgotPassword } from "../services/authService";
 
-function ForgotPassword() {
+const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const submit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+
     try {
-      await forgotPassword(email);
-      alert("Reset link sent");
-    } catch {
-      alert("User not found");
+      const res = await forgotPassword(email);
+      setMessage(res.message || "Reset link sent to email");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong"
+      );
     }
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4">
-        <h4>Forgot Password</h4>
+    <div>
+      <h2>Forgot Password</h2>
+      <form onSubmit={handleSubmit}>
         <input
-          className="form-control my-3"
-          placeholder="Email"
-          onChange={e => setEmail(e.target.value)}
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        <button className="btn btn-primary" onClick={submit}>
-          Send Reset Link
-        </button>
-      </div>
+        <button type="submit">Send Reset Link</button>
+      </form>
+
+      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
-}
+};
 
 export default ForgotPassword;

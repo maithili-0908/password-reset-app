@@ -1,42 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { resetPassword, validateToken } from "../services/authService";
+import { resetPassword } from "../services/authService";
 
-function ResetPassword() {
+const ResetPassword = () => {
   const { token } = useParams();
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    validateToken(token).catch(() =>
-      alert("Reset link expired")
-    );
-  }, [token]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
 
-  const submit = async () => {
     try {
-      await resetPassword(token, password);
-      alert("Password reset successful");
-    } catch {
-      alert("Failed to reset password");
+      const res = await resetPassword(token, password);
+      setMessage(res.message || "Password reset successful");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Invalid or expired token"
+      );
     }
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4">
-        <h4>Reset Password</h4>
+    <div>
+      <h2>Reset Password</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="password"
-          className="form-control my-3"
-          placeholder="New Password"
-          onChange={e => setPassword(e.target.value)}
+          placeholder="New password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        <button className="btn btn-success" onClick={submit}>
-          Update Password
-        </button>
-      </div>
+        <button type="submit">Reset Password</button>
+      </form>
+
+      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
-}
+};
 
-export default ResetPassword;
+export default ResetPassword;y

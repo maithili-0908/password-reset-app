@@ -1,47 +1,52 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
+import { loginUser } from "../services/authService";
+import "../styles/auth.css";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Login = () => {
   const history = useHistory();
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const submit = e => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Login clicked");
+    try {
+      await loginUser(form);
+      alert("Login successful");
+    } catch (err) {
+      alert(err.response?.data?.message || "Login failed");
+    }
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4">
-        <h4>Login</h4>
+    <div className="auth-container">
+      <h2>Login</h2>
 
+      <form onSubmit={handleSubmit}>
         <input
-          className="form-control my-2"
+          name="email"
           placeholder="Email"
-          onChange={e => setEmail(e.target.value)}
+          onChange={handleChange}
+          required
         />
 
         <input
+          name="password"
           type="password"
-          className="form-control my-2"
           placeholder="Password"
-          onChange={e => setPassword(e.target.value)}
+          onChange={handleChange}
+          required
         />
 
-        <button className="btn btn-primary w-100 mt-2" onClick={submit}>
-          Login
-        </button>
+        <button type="submit">Login</button>
+      </form>
 
-        <button
-          className="btn btn-link mt-2"
-          onClick={() => history.push("/forgot-password")}
-        >
-          Forgot password?
-        </button>
-      </div>
+      <Link to="/forgot-password">Forgot password?</Link>
     </div>
   );
-}
+};
 
 export default Login;

@@ -1,11 +1,27 @@
 import axios from "axios";
-import { API_URL } from "../config";
 
-export const forgotPassword = email =>
-  axios.post(`${API_URL}/forgot-password`, { email });
+const API_BASE_URL = "http://localhost:5000/api/auth";
 
-export const resetPassword = (token, password) =>
-  axios.post(`${API_URL}/reset-password/${token}`, { password });
+export const forgotPassword = async (email) => {
+  const res = await axios.post(
+    `${API_BASE_URL}/forgot-password`,
+    { email }
+  );
+  return res.data;
+};
 
-export const validateToken = token =>
-  axios.get(`${API_URL}/reset-password/${token}`);
+export const resetPassword = async (token, password) => {
+  const res = await axios.post(
+    `${API_BASE_URL}/reset-password/${token}`,
+    { password }
+  );
+  return res.data;
+};
+
+export const loginUser = async (data) => {
+  const res = await axios.post(
+    `${API_BASE_URL}/login`,
+    data
+  );
+  return res.data;
+};
