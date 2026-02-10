@@ -1,27 +1,14 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api/auth";
+const API = axios.create({
+  baseURL: "https://password-reset-backend.onrender.com/api/auth"
+});
 
-export const forgotPassword = async (email) => {
-  const res = await axios.post(
-    `${API_BASE_URL}/forgot-password`,
-    { email }
-  );
-  return res.data;
-};
+export const forgotPassword = (email) =>
+  API.post("/forgot-password", { email });
 
-export const resetPassword = async (token, password) => {
-  const res = await axios.post(
-    `${API_BASE_URL}/reset-password/${token}`,
-    { password }
-  );
-  return res.data;
-};
+export const resetPassword = (token, password) =>
+  API.post(`/reset-password/${token}`, { password });
 
-export const loginUser = async (data) => {
-  const res = await axios.post(
-    `${API_BASE_URL}/login`,
-    data
-  );
-  return res.data;
-};
+export const loginUser = (data) =>
+  API.post("/login", data);

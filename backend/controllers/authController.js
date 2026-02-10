@@ -4,9 +4,7 @@ const User = require("../models/User");
 const transporter = require("../config/mail");
 const { generateToken } = require("../utils/token");
 
-/* =========================
-   CREATE USER (POSTMAN)
-========================= */
+
 exports.createUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -40,9 +38,6 @@ exports.createUser = async (req, res) => {
   }
 };
 
-/* =========================
-   GET ALL USERS
-========================= */
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -52,9 +47,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-/* =========================
-   FORGOT PASSWORD
-========================= */
+
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -74,7 +67,7 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     await transporter.sendMail({
       from: `"Password Reset" <${process.env.MAIL_USER}>`,
