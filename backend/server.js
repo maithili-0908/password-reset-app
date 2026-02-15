@@ -14,18 +14,20 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",            
-      process.env.FRONTEND_URL             
+      "http://localhost:3000",
+      process.env.FRONTEND_URL
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   })
 );
 
+
 app.use("/api/auth", authRoutes);
 
+
 app.get("/", (req, res) => {
-  res.send("🚀 Password Reset API is running");
+  res.status(200).send("🚀 Password Reset API is running");
 });
 
 
@@ -36,6 +38,7 @@ mongoose
     console.error("❌ MongoDB Connection Error:", err.message);
     process.exit(1);
   });
+
 
 
 const PORT = process.env.PORT || 5000;

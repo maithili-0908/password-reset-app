@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://password-reset-backend.onrender.com/api/auth"
+  baseURL: `${process.env.REACT_APP_API_BASE_URL}/api/auth`,
 });
 
 export const forgotPassword = (email) =>
