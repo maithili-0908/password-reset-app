@@ -15,7 +15,7 @@ const ResetPassword = () => {
 
     try {
       const res = await resetPassword(token, password);
-      setMessage(res.message || "Password reset successful");
+      setMessage(res.data?.message || "Password reset successful");
     } catch (err) {
       setError(
         err.response?.data?.message || "Invalid or expired token"
@@ -43,4 +43,4 @@ const ResetPassword = () => {
   );
 };
 
-export default ResetPassword;y
+export default ResetPassword;
