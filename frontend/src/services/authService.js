@@ -9,6 +9,3 @@ export const forgotPassword = (email) =>
 
 export const resetPassword = (token, password) =>
   API.post(`/reset-password/${token}`, { password });
-
-export const loginUser = (data) =>
-  API.post("/login", data);
