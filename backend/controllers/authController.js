@@ -5,6 +5,61 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 
+// ================= REGISTER =================
+exports.registerUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({ message: "User registered successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// ================= LOGIN =================
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 // ================= FORGOT PASSWORD =================
 exports.forgotPassword = async (req, res) => {
   try {
@@ -15,7 +70,6 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Create token
     const resetToken = crypto.randomBytes(20).toString("hex");
 
     user.resetPasswordToken = crypto
@@ -23,13 +77,12 @@ exports.forgotPassword = async (req, res) => {
       .update(resetToken)
       .digest("hex");
 
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 mins
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
     await user.save();
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // Email transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -39,13 +92,13 @@ exports.forgotPassword = async (req, res) => {
     });
 
     const message = `
-      You requested a password reset.
+You requested a password reset.
 
-      Click this link to reset your password:
-      ${resetUrl}
+Click this link to reset your password:
+${resetUrl}
 
-      This link will expire in 15 minutes.
-    `;
+This link will expire in 15 minutes.
+`;
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
