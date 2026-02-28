@@ -1,23 +1,19 @@
 import React, { useState } from "react";
-import { forgotPassword } from "../services/authService";
+import axios from "axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
-
     try {
-      const res = await forgotPassword(email);
-      setMessage(res.message || "Reset link sent to email");
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Something went wrong"
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/forgot-password`,
+        { email }
       );
+      alert("Reset link sent to email");
+    } catch (err) {
+      alert("Error sending reset link");
     }
   };
 
@@ -28,15 +24,11 @@ const ForgotPassword = () => {
         <input
           type="email"
           placeholder="Enter your email"
-          value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <button type="submit">Send Reset Link</button>
       </form>
-
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };

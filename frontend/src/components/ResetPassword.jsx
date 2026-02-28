@@ -1,40 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState } from "react";
 import axios from "axios";
-import { resetPassword } from "../services/authService";
+import { useParams } from "react-router-dom";
 
 const ResetPassword = () => {
   const { token } = useParams();
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [valid, setValid] = useState(false);
-
-  useEffect(() => {
-    const validate = async () => {
-      try {
-        await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/auth/reset-password/${token}`
-        );
-        setValid(true);
-      } catch (err) {
-        setError("Invalid or expired token");
-      }
-    };
-    validate();
-  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await resetPassword(token, password);
-      setMessage(res.data.message);
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/reset-password/${token}`,
+        { password }
+      );
+      alert("Password reset successful");
     } catch (err) {
-      setError(err.response?.data?.message || "Error resetting password");
+      alert("Error resetting password");
     }
   };
-
-  if (!valid) return <p>{error}</p>;
 
   return (
     <div>
@@ -48,7 +31,6 @@ const ResetPassword = () => {
         />
         <button type="submit">Reset Password</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   );
 };
