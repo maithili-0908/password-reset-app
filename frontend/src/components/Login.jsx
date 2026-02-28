@@ -25,19 +25,86 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-        <button type="submit">Login</button>
-      </form>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Welcome Back 👋</h2>
 
-      <p>
-        <Link to="/forgot-password">Forgot Password?</Link>
-      </p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+
+        <p style={styles.linkText}>
+          <Link to="/forgot-password">Forgot Password?</Link>
+        </p>
+
+        <p style={styles.linkText}>
+          Don't have an account? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "linear-gradient(to right, #667eea, #764ba2)"
+  },
+  card: {
+    background: "#fff",
+    padding: "40px",
+    borderRadius: "10px",
+    width: "350px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: "20px"
+  },
+  input: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "5px",
+    border: "1px solid #ccc"
+  },
+  button: {
+    width: "100%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "none",
+    backgroundColor: "#667eea",
+    color: "white",
+    fontWeight: "bold",
+    cursor: "pointer"
+  },
+  linkText: {
+    textAlign: "center",
+    marginTop: "10px"
+  }
 };
 
 export default Login;
