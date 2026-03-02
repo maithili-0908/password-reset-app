@@ -1,35 +1,9 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
 require("dotenv").config();
 
-const authRoutes = require("./routes/authRoutes");
-
-const app = express();
-
-app.use(express.json());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://passwordresetmai.netlify.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  })
-);
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
-
-app.get("/", (req, res) => {
-  res.send("🚀 Password Reset API is running");
-});
-
-app.use("/api/auth", authRoutes);
+const app = require("./app");
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
