@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const transporter = require("../config/mail");
 
-
 // ================= REGISTER =================
 exports.registerUser = async (req, res) => {
   try {
@@ -29,7 +28,6 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // ================= LOGIN =================
 exports.loginUser = async (req, res) => {
@@ -59,7 +57,6 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-
 // ================= FORGOT PASSWORD =================
 exports.forgotPassword = async (req, res) => {
   try {
@@ -70,6 +67,7 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Generate token
     const resetToken = crypto.randomBytes(20).toString("hex");
 
     user.resetPasswordToken = crypto
@@ -81,23 +79,16 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save();
 
+    // Reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
 
     const message = `
 You requested a password reset.
 
-Click this link to reset your password:
+Click this link:
 ${resetUrl}
 
-This link will expire in 15 minutes.
+This link expires in 15 minutes.
 `;
 
     await transporter.sendMail({
@@ -110,10 +101,10 @@ This link will expire in 15 minutes.
     res.json({ message: "Reset email sent successfully" });
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // ================= RESET PASSWORD =================
 exports.resetPassword = async (req, res) => {
