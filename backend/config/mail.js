@@ -1,19 +1,26 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // IMPORTANT
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+if (!process.env.SENDGRID_API_KEY) {
+  throw new Error("SENDGRID_API_KEY is not defined in environment variables");
+}
 
-module.exports = transporter;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const sendEmail = async (to, subject, html) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.EMAIL_USER, // must be verified in SendGrid
+      subject,
+      html,
+    };
+
+    await sgMail.send(msg);
+    console.log("✅ Email sent successfully");
+  } catch (error) {
+    console.error("❌ SendGrid Error:", error.response?.body || error.message);
+    throw error;
+  }
+};
+
+module.exports = sendEmail;

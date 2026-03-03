@@ -1,139 +1,44 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const express = require("express");
 const crypto = require("crypto");
-const transporter = require("../config/mail");
+const User = require("../models/User");
+const sendEmail = require("../utils/mail");
 
-// ================= REGISTER =================
-exports.registerUser = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+const router = express.Router();
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
-
-    res.status(201).json({ message: "User registered successfully" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ================= LOGIN =================
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.json({ token });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ================= FORGOT PASSWORD =================
-exports.forgotPassword = async (req, res) => {
+router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate token
-    const resetToken = crypto.randomBytes(20).toString("hex");
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
-    user.resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-
-    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
-
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 mins
     await user.save();
 
-    // Reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    const message = `
-You requested a password reset.
+    const html = `
+      <h2>Password Reset</h2>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>This link expires in 15 minutes.</p>
+    `;
 
-Click this link:
-${resetUrl}
+    await sendEmail(user.email, "Password Reset", html);
 
-This link expires in 15 minutes.
-`;
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Password Reset Request",
-      text: message,
-    });
-
-    res.json({ message: "Reset email sent successfully" });
+    res.json({ message: "Reset link sent to email" });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server Error" });
   }
-};
+});
 
-// ================= RESET PASSWORD =================
-exports.resetPassword = async (req, res) => {
-  try {
-    const resetToken = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
-
-    const user = await User.findOne({
-      resetPasswordToken: resetToken,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-
-    await user.save();
-
-    res.json({ message: "Password reset successful" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+module.exports = router;
