@@ -14,7 +14,7 @@ const sendEmail = async (to, subject, html) => {
       subject,
       html,
     };
-
+     
     await sgMail.send(msg);
     console.log("✅ Email sent successfully");
   } catch (error) {

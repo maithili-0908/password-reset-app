@@ -1,36 +1,24 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db");
-const errorHandler = require("./middleware/errorHandler");
+
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Middlewares
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 
-// Middleware
 app.use(express.json());
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://passwordresetmai.netlify.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-  })
-);
-
-// Test Route
-app.get("/", (req, res) => {
-  res.send("🚀 Password Reset API is running");
-});
-
 // Routes
-app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth", authRoutes);
 
-// Error handler (MUST be last)
-app.use(errorHandler);
+// Health check
+app.get("/", (req, res) => {
+  res.send("API Running...");
+});
 
 module.exports = app;
