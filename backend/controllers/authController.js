@@ -1,7 +1,7 @@
 const express = require("express");
 const crypto = require("crypto");
 const User = require("../models/User");
-const sendEmail = require("../utils/mail");
+const sendEmail = require("../config/mail");
 
 const router = express.Router();
 
