@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+console.log("Email:", process.env.EMAIL_USER);
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
 

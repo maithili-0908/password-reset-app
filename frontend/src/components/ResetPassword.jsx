@@ -10,9 +10,9 @@ const ResetPassword = () => {
     e.preventDefault();
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/auth/reset-password/${token}`,
-        { password }
-      );
+  `https://password-reset-app-2dia.onrender.com/api/auth/reset-password/${token}`,
+  { password }
+);
       alert("Password reset successful");
     } catch (err) {
       alert("Error resetting password");
