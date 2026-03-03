@@ -1,44 +1,37 @@
-const crypto = require("crypto");
-const User = require("../models/User");
-const sendEmail = require("../config/mail");
+const bcrypt = require("bcryptjs");
 
-// FORGOT PASSWORD
-exports.forgotPassword = async (req, res) => {
+// RESET PASSWORD
+exports.resetPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { token } = req.params;
+    const { password } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    // Generate token
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+    user.password = hashedPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+
     await user.save();
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
-    const html = `
-      <h2>Password Reset</h2>
-      <p>Click below to reset your password:</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>This link expires in 15 minutes.</p>
-    `;
-
-    await sendEmail(user.email, "Password Reset", html);
-
-    res.json({ message: "Reset link sent successfully" });
+    res.json({ message: "Password reset successful" });
 
   } catch (error) {
-    console.error("Forgot Password Error:", error);
+    console.error("Reset Password Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
