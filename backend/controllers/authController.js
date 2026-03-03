@@ -17,6 +17,7 @@ exports.forgotPassword = async (req, res) => {
 
     user.resetToken = resetToken;
     user.resetTokenExpiry = Date.now() + 15 * 60 * 1000;
+
     await user.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
@@ -30,11 +31,10 @@ exports.forgotPassword = async (req, res) => {
     res.json({ message: "Reset link sent" });
 
   } catch (error) {
-    console.error(error);
+    console.error("Forgot error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
-
 
 // RESET PASSWORD
 exports.resetPassword = async (req, res) => {
@@ -44,7 +44,7 @@ exports.resetPassword = async (req, res) => {
 
     const user = await User.findOne({
       resetToken: token,
-      resetTokenExpiry: { $gt: Date.now() },
+      resetTokenExpiry: { $gt: Date.now() }
     });
 
     if (!user) {
@@ -62,7 +62,7 @@ exports.resetPassword = async (req, res) => {
     res.json({ message: "Password reset successful" });
 
   } catch (error) {
-    console.error(error);
+    console.error("Reset error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
