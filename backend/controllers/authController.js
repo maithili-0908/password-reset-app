@@ -3,12 +3,14 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const sendEmail = require("../config/mail");
 
-// REGISTER
+
+// ================= REGISTER =================
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -32,12 +34,15 @@ exports.registerUser = async (req, res) => {
 };
 
 
-// LOGIN
+
+// ================= LOGIN =================
 exports.loginUser = async (req, res) => {
   try {
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -48,7 +53,10 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    res.json({ message: "Login successful", user });
+    res.json({
+      message: "Login successful",
+      user
+    });
 
   } catch (error) {
     console.error("Login error:", error);
@@ -57,43 +65,59 @@ exports.loginUser = async (req, res) => {
 };
 
 
-// FORGOT PASSWORD
+
+// ================= FORGOT PASSWORD =================
 exports.forgotPassword = async (req, res) => {
   try {
+
     const { email } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // generate token
     const resetToken = crypto.randomBytes(32).toString("hex");
 
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000;
+    // save token in database
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
 
     await user.save();
 
+    // create reset link
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await sendEmail(user.email, "Password Reset", `<a href="${resetLink}">${resetLink}</a>`);
+    // send email
+    await sendEmail(
+      user.email,
+      "Password Reset",
+      `<p>Click the link below to reset your password:</p>
+       <a href="${resetLink}">${resetLink}</a>`
+    );
 
-    res.json({ message: "Reset link sent" });
+    res.json({ message: "Reset link sent to email" });
 
   } catch (error) {
-    console.error("Forgot error:", error);
+    console.error("Forgot password error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
 
-// RESET PASSWORD
+
+// ================= RESET PASSWORD =================
 exports.resetPassword = async (req, res) => {
   try {
+
     const { token } = req.params;
     const { password } = req.body;
 
     const user = await User.findOne({
-      resetToken: token,
-      resetTokenExpiry: { $gt: Date.now() }
+      resetPasswordToken: token,
+      resetPasswordExpire: { $gt: Date.now() }
     });
 
     if (!user) {
@@ -103,15 +127,17 @@ exports.resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     user.password = hashedPassword;
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
+
+    // clear token
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
 
     await user.save();
 
     res.json({ message: "Password reset successful" });
 
   } catch (error) {
-    console.error("Reset error:", error);
+    console.error("Reset password error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
